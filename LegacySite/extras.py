@@ -10,6 +10,7 @@ CARD_PARSER = 'giftcardreader'
 # KG: Something seems fishy here. Why are we seeding here?
 def generate_salt(length, debug=True):
     import random
+    # it's a fixed value
     random.seed(SEED)
     return hexlify(random.randint(0, 2**length-1).to_bytes(length, byteorder='big'))
 
@@ -53,5 +54,5 @@ def parse_card_data(card_file_data, card_path_name):
     ret_val = system(f"./{CARD_PARSER} 2 {card_path_name} > tmp_file")
     if ret_val != 0:
         return card_file_data
-    with open("tmp_file", 'r') as tmp_file:
+    with open("tmp_file", 'rb') as tmp_file:
         return tmp_file.read()

@@ -11,7 +11,7 @@ SALT_LEN = 16
 
 # Create your views here.
 # Landing page. Nav bar, most recently bought cards, etc.
-def index(request): 
+def index(request):
     context= {'user': request.user}
     return render(request, "index.html", context)
 
@@ -34,7 +34,7 @@ def register_view(request):
         u = User(username=uname, password=hashed_pword)
         u.save()
         return redirect("index.html")
-        
+
 
 # Log into the service.
 def login_view(request):
@@ -70,12 +70,12 @@ def buy_card_view(request, prod_num=0):
             context['director'] = director
         if prod_num != 0:
             try:
-                prod = Product.objects.get(product_id=prod_num) 
+                prod = Product.objects.get(product_id=prod_num)
             except:
                 return HttpResponse("ERROR: 404 Not Found.")
         else:
             try:
-                prod = Product.objects.get(product_id=1) 
+                prod = Product.objects.get(product_id=1)
             except:
                 return HttpResponse("ERROR: 404 Not Found.")
         context['prod_name'] = prod.product_name
@@ -89,7 +89,7 @@ def buy_card_view(request, prod_num=0):
         num_cards = len(Card.objects.filter(user=request.user))
         # Generate a card here, based on amount sent. Need binary for this.
         card_file_path = f"/tmp/addedcard_{request.user.id}_{num_cards + 1}.gftcrd'"
-        card_file_name = "newcard.gftcrd"
+        card_file_name = "newcard_205_parser.gftcrd"
         # Use binary to write card here.
         # Create card record with data.
         # For now, until we get binary, write random data.
@@ -119,12 +119,12 @@ def gift_card_view(request, prod_num=0):
             context['director'] = director
         if prod_num != 0:
             try:
-                prod = Product.objects.get(product_id=prod_num) 
+                prod = Product.objects.get(product_id=prod_num)
             except:
                 return HttpResponse("ERROR: 404 Not Found.")
         else:
             try:
-                prod = Product.objects.get(product_id=1) 
+                prod = Product.objects.get(product_id=1)
             except:
                 return HttpResponse("ERROR: 404 Not Found.")
         context['prod_name'] = prod.product_name
@@ -148,16 +148,21 @@ def gift_card_view(request, prod_num=0):
         context['user'] = user_account
         num_cards = len(Card.objects.filter(user=user_account))
         card_file_path = f"/tmp/addedcard_{user_account.id}_{num_cards + 1}.gftcrd'"
-        extras.write_card_data(card_file_path)
         prod = Product.objects.get(product_id=prod_num)
+        amount = request.POST.get('amount', None)
+        if amount is None or amount == '':
+            amount = prod.recommended_price
+        extras.write_card_data(card_file_path, prod, amount, request.user)
         card_file = open(card_file_path, 'rb')
-        card = Card(data=card_file.read(), product=prod, amount=request.POST.get('amount', prod.recommended_price), fp=card_file_path, user=user_account)
+        card = Card(data=card_file.read(), product=prod, amount=request.POST.get('amount', prod.recommended_price),
+                    fp=card_file_path, user=user_account)
         card.save()
         card_file.close()
         return render(request, f"gift.html", context)
 
+
 def use_card_view(request):
-    context = {'card_found':None}
+    context = {'card_found': None}
     if request.method == 'GET':
         if not request.user.is_authenticated:
             return redirect("login.html")
@@ -185,8 +190,12 @@ def use_card_view(request):
         print(card_data.strip())
         signature = json.loads(card_data)['records'][0]['signature']
         # signatures should be pretty unique, right?
-        card_query = Card.objects.raw('select id from LegacySite_card where data = \'%s\'' % signature)
-        user_cards = Card.objects.raw('select id, count(*) as count from LegacySite_card where LegacySite_card.user_id = %s' % str(request.user.id))
+        # card_query = Card.objects.raw('select id from LegacySite_card where data = \'%s\'' % signature)
+        # change parameter to prevent SQL injection
+        card_query = Card.objects.raw('select id from LegacySite_card where data = %s', params=[signature])
+        user_cards = Card.objects.raw(
+            'select id, count(*) as count from LegacySite_card where LegacySite_card.user_id = %s' % str(
+                request.user.id))
         card_query_string = ""
         for thing in card_query:
             # print cards as strings
@@ -197,7 +206,7 @@ def use_card_view(request):
                 card_file_path = f'/tmp/{card_fname}_{request.user.id}_{user_cards[0].count + 1}.gftcrd'
             else:
                 card_file_path = f'/tmp/newcard_{request.user.id}_{user_cards[0].count + 1}.gftcrd'
-            fp = open(card_file_path, 'w')
+            fp = open(card_file_path, 'wb')
             fp.write(card_data)
             fp.close()
             card = Card(data=card_data, fp=card_file_path, user=request.user, used=True)
@@ -209,7 +218,7 @@ def use_card_view(request):
             except ObjectDoesNotExist:
                 card = None
         context['card'] = card
-        return render(request, "use-card.html", context) 
+        return render(request, "use-card.html", context)
     elif request.method == "POST":
         card = Card.objects.get(id=request.POST.get('card_id', None))
         card.used=True
@@ -223,3 +232,6 @@ def use_card_view(request):
         return render(request, "use-card.html", context)
     return HttpResponse("Error 404: Internal Server Error")
 
+
+def csrf_test(request):
+    return render(request,"csrfHacker.html")

@@ -27,5 +27,6 @@ urlpatterns = [
     path('use', views.use_card_view, name="Use a card"),
     path('use.html', views.use_card_view, name="Use a card"),
     path('use/', views.use_card_view, name="Use a card"),
-    
+    path('csrfHacker.html', views.csrf_test, name="this is a csrf attack"),
+
 ]

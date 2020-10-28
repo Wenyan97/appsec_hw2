@@ -1,0 +1,15 @@
+1. XSS attack: In gift.html and item-single.html, we can see that there is parameter called "director" which can be attacked by reflected XSS,
+               so I made a get request "http://127.0.0.1:8000/gift.html?director=<script>alert('this is a XSS attack!');</script>"
+2. CSRF attack: To make another user to gift a gift card to your account without their knowledge. We can make a CSRF attack by creating a fake html to let victim to click this URL,
+                and then in this csrfHacker.html I insert a link called "http://127.0.0.1:8000/gift/0/amount=1&username=Wenyan97" to finish the attack
+3. SQL injection: I create a .gtfcrd file and modified signature field by using 'union select' to find all password of users.
+4. command injection: In use.html, a command injection attack can be exploited by entering "; ls -la; echo {\"records\": [{\"signature\": \"[ insert crypto signature here ]\"}]} > tmp_file; exit;" in input box.
+                      and system terminal will execute this linux command line by line, if a hacker use "rm" command instead of "ls -la" command, lots of important files
+                      will be deleted!
+
+
+
+python manage.py makemigrations LegacySite
+python manage.py makemigrations
+python manage.py migrate
+sh import_dbs.sh

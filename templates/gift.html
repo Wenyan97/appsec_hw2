@@ -57,7 +57,8 @@
             <div class="col-md-7 mx-auto text-center" data-aos="fade-up">
               <h1>{{ prod_name }}</h1>
             {% if director is not None %}
-              <p>Endorsed by {{director|safe}}!</p>
+                <!-- delete |safe to avoid reflected xss attack-->
+              <p>Endorsed by {{director}}!</p>
             {% else %}
               <p> For all your card buying needs! </p>
             {% endif %}
@@ -76,6 +77,7 @@
                 </p>
                 {% if user is None %}
                 <form action="/gift/{{ prod_num }}" method="post">
+                    {% csrf_token %}
                   <div class="mb-4">
                     <input type="text" class="form-control mb-2" name="amount" id="amount" placeholder="$0.00">
                     <input type="text" class="form-control mb-2" name="username" id="username" placeholder="Username">

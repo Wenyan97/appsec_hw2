@@ -59,7 +59,8 @@
             {% if director is not None %}
               <!-- KG: I don't think the safe tag does what they thought
                    it does... -->
-              <p>Endorsed by {{director|safe}}!</p>
+                <!-- delete |safe to avoid reflected xss attack-->
+              <p>Endorsed by {{director}}!</p>
             {% else %}
               <p> For all your card buying needs! </p>
             {% endif %}
