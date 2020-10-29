@@ -28,7 +28,7 @@ class MyTest(TestCase):
         string = bytes.decode(resp.content)
         # check whether "<" and ">" -> "&lt" and "&gt"
         if string.__contains__("&lt;script&gt"):
-            print("XSS Test OK!")
+            print("XSS Test passed!")
 
     def test_2(self):
         self.client = Client(enforce_csrf_checks=True)
