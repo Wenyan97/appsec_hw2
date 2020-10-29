@@ -15,7 +15,15 @@ CARD_PARSER = 'giftcardreader'
 
 
 class MyTest(TestCase):
+
     def test_1(self):
+        Product.objects.create(
+            product_id=1,
+            product_name='NYU Apparel Card',
+            product_image_path='/images/product_1.jpg',
+            recommended_price=95,
+            description='Use this card to buy NYU Clothing!'
+        )
         resp = self.client.get('/gift/', {'director': '<script>alert(this is a xss attack!)</script>'})
         string = bytes.decode(resp.content)
         # check whether "<" and ">" -> "&lt" and "&gt"
@@ -23,6 +31,7 @@ class MyTest(TestCase):
             print("XSS Test OK!")
 
     def test_2(self):
+        self.client = Client(enforce_csrf_checks=True)
         resp = self.client.post('/gift/1', {'amount': '1', 'username': 'wenyan97'})
         if resp.status_code == 403:
             print("CRSF test passed!")
