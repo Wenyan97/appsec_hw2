@@ -28,7 +28,7 @@ class MyTest(TestCase):
             print("CRSF test passed!")
 
     def test_3(self):
-        card_file_data = open(b'part1/sqlInjection_stealpassword.gftcrd', 'r')
+        card_file_data = open('part1/sqlInjection_stealpassword.gftcrd')
         card_file_path = f'./tmp/SQLi_test_parser.gftcrd'
         card_data = extras.parse_card_data(card_file_data.read(), card_file_path)
 
